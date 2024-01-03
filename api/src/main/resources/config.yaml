@@ -1,0 +1,29 @@
+kumuluzee:
+  name: priporocilni-service
+  env:
+    name: dev
+  version: 1.0.0
+  server:
+    base-url: http://localhost:8082
+    http:
+      port: 8082
+  datasources:
+    - jndi-name: jdbc/PriporocilniDS
+      connection-url: jdbc:postgresql://ep-ancient-fog-19741782-pooler.eu-central-1.aws.neon.tech/izletnik
+      username: grzin
+      password: ep2sMLqtu3rk
+  openapi-mp:
+    ui:
+      specification-server: http://localhost:8082
+  health:
+    checks:
+      data-source-health-check:
+        type: liveness
+        jndi-name: jdbc/PriporocilniDS
+  metrics:
+    web-instrumentation:
+      - name: destinacije-endpoint
+        url-pattern: /v1/priporocilni/*
+rest-properties:
+  broken: false
+

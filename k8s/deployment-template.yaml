@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: priporocilni-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: priporocilni
+  template:
+    metadata:
+      labels:
+        app: priporocilni
+    spec:
+      containers:
+        - image: prelog/rso_priporocilni:2023-12-05-05-57-49
+          name: priporocilni
+          env:
+            - name: KUMULUZEE_DATASOURCES0_CONNECTIONURL
+              value: jdbc:postgresql://ep-ancient-fog-19741782-pooler.eu-central-1.aws.neon.tech/izletnik
+            - name: KUMULUZEE_DATASOURCES0_USERNAME
+              value: grzin
+            - name: KUMULUZEE_DATASOURCES0_PASSWORD
+              value: ep2sMLqtu3rk
+              #valueFrom: #use Kubernetes secret for storing the password
+                #secretKeyRef:
+                  #name: #to be added
+                  #key: #to be added
+          ports:
+            - containerPort: 8081
+              name: server
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: server
+            initialDelaySeconds: 20
+            periodSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: server
+            initialDelaySeconds: 20
+            periodSeconds: 3
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: priporocilni-service
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8082
+      protocol: TCP
+      targetPort: server
+  selector:
+    app: priporocilni
