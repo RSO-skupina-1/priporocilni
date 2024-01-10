@@ -4,8 +4,17 @@ package si.fri.rso.priporocilni.api.v1.resources;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.kumuluz.ee.cors.annotations.CrossOrigin;
+import com.kumuluz.ee.logs.cdi.Log;
 import okhttp3.Request;
+import org.eclipse.microprofile.metrics.annotation.Counted;
+import org.eclipse.microprofile.metrics.annotation.Timed;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import si.fri.rso.priporocilni.lib.Komentar;
 import si.fri.rso.priporocilni.lib.Uporabnik;
 import si.fri.rso.priporocilni.lib.KatalogDestinacij;
@@ -23,7 +32,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 
-
+@Log
 @ApplicationScoped
 @Path("/priporocilni")
 @Produces(MediaType.APPLICATION_JSON)
@@ -37,6 +46,58 @@ public class PriporocilniResource {
     @Context
     protected UriInfo uriInfo;
 
+    @Operation(description = "Get priporocilo for user.", summary = "Returns priporocilo for user.")
+    @APIResponses({
+            @APIResponse(responseCode = "200",
+                    description = "Priporocilo, array of destinacije of length <= 10.",
+                    content = @Content(schema = @Schema(implementation = KatalogDestinacij.class, type = SchemaType.ARRAY,
+                            example = """
+                    [
+                        {
+                            "accessibility": "Metro, tram",
+                            "description": "Picturesque city in northwest Portugal.",
+                            "id": 7,
+                            "infrastructure": "Ribeira, Port wine cellars",
+                            "latitude": 41.157944,
+                            "location": "Northern Portugal",
+                            "longitude": -8.629105,
+                            "price": 26.5,
+                            "title": "Porto"
+                        },
+                        {
+                            "accessibility": "Car, bus",
+                            "description": "Coastal town with Venetian architecture.",
+                            "id": 8,
+                            "infrastructure": "Old town, seaside promenade",
+                            "latitude": 45.527435,
+                            "location": "SW Slovenia",
+                            "longitude": 13.568627,
+                            "price": 19.9,
+                            "title": "Piran"
+                        },
+                        {
+                            "accessibility": "Car, bus",
+                            "description": "Serene lake surrounded by mountains.",
+                            "id": 6,
+                            "infrastructure": "Hiking trails, boat tours",
+                            "latitude": 46.273983,
+                            "location": "NW Slovenia",
+                            "longitude": 13.886146,
+                            "price": 22.75,
+                            "title": "Lake Bohinj"
+                        }
+                    ]
+                    """))),
+            @APIResponse(responseCode = "404",
+                    description = "User with given id does not exist.",
+                    content = @Content(schema = @Schema(implementation = String.class))),
+            @APIResponse(responseCode = "500",
+                    description = "Internal server error.")
+    })
+
+    @Timed(name = "get_priporocilo_timer")
+    @Counted(name = "get_priporocilo_count")
+    @Log
     @GET
     @Path("/{userId}")
     public Response getPriporocilo(@Parameter(description = "User ID", required = true)

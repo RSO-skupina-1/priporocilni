@@ -7,23 +7,48 @@ kumuluzee:
     base-url: http://localhost:8082
     http:
       port: 8082
-  datasources:
-    - jndi-name: jdbc/PriporocilniDS
-      connection-url: jdbc:postgresql://ep-ancient-fog-19741782-pooler.eu-central-1.aws.neon.tech/izletnik
-      username: grzin
-      password: ep2sMLqtu3rk
   openapi-mp:
+    enabled: true
     ui:
+      mapping: /v1/priporocilni/api-specs/ui
       specification-server: http://localhost:8082
-  health:
-    checks:
-      data-source-health-check:
-        type: liveness
-        jndi-name: jdbc/PriporocilniDS
+    servlet:
+      mapping: /v1/priporocilni/openapi
+  logs:
+    config-file: '<?xml version="1.0" encoding="UTF-8"?>
+                            <Configuration name="comments">
+                                <Appenders>
+                                    <Console name="console" target="SYSTEM_OUT">
+                                        <PatternLayout pattern="%d %p %marker %m %X %ex %n"/>
+                                    </Console>
+                                    <Socket name="logstash" host="f4e5773d-c9f5-4519-9c8d-495ce795f5be-ls.logit.io"
+                                    port="22241" protocol="udp">
+                                        <JSONLayout complete="false " compact="true" eventEol="true" charset="UTF-8" properties="true"/>
+                                    </Socket>
+                                </Appenders>
+                                <Loggers>
+                                    <!-- Default logger -->
+                                    <Root level="all">
+                                        <AppenderRef ref="console" level="info" />
+                                        <AppenderRef ref="logstash" level="trace" />
+                                    </Root>
+                                </Loggers>
+                            </Configuration>'
   metrics:
     web-instrumentation:
-      - name: destinacije-endpoint
-        url-pattern: /v1/priporocilni/*
+      - name: metrics-endpoint
+        url-pattern: /metrics/*
+        status-code: "200, 500"
+      - name: prometheus-endpoint
+        url-pattern: /prometheus/*
+  cors:
+    enabled: true
+    paths: "/*"
+    allowed-methods: "GET,POST,PUT,DELETE,OPTIONS"
+    allowed-headers: "*"
+    allowed-origins: "*"
+    max-age: 3600
+    credentials: false
 rest-properties:
   broken: false
 
