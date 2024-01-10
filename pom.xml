@@ -29,6 +29,7 @@
         <postgresql.version>42.6.0</postgresql.version>
         <kumuluzee-health.version>2.4.4</kumuluzee-health.version>
         <kumuluzee-metrics.version>3.0.0</kumuluzee-metrics.version>
+        <kumuluzee-cors.version>1.0.6</kumuluzee-cors.version>
     </properties>
 
     <dependencyManagement>
@@ -103,6 +104,12 @@
                 <groupId>si.fri.rso</groupId>
                 <artifactId>priporocilni-lib</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.kumuluz.ee.cors</groupId>
+                <artifactId>kumuluzee-cors</artifactId>
+                <version>${kumuluzee-cors.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

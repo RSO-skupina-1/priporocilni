@@ -1,21 +1,14 @@
 package si.fri.rso.priporocilni.api.v1.resources;
 
 
-import okhttp3.Call;
-import okhttp3.OkHttpClient;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.kumuluz.ee.cors.annotations.CrossOrigin;
 import okhttp3.Request;
-import org.eclipse.microprofile.metrics.annotation.Counted;
-import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
-import org.eclipse.microprofile.openapi.annotations.media.Content;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
-import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
-import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
-import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
-import org.json.JSONObject;
-import si.fri.rso.priporocilni.lib.Priporocilni;
-import si.fri.rso.priporocilni.services.beans.PriporocilniBean;
+import si.fri.rso.priporocilni.lib.Komentar;
+import si.fri.rso.priporocilni.lib.Uporabnik;
+import si.fri.rso.priporocilni.lib.KatalogDestinacij;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -25,7 +18,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -35,251 +28,171 @@ import java.util.logging.Logger;
 @Path("/priporocilni")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@CrossOrigin(name = "priporocilni", allowOrigin = "*")
 public class PriporocilniResource {
 
     private Logger log = Logger.getLogger(PriporocilniResource.class.getName());
-
-    @Inject
-    private PriporocilniBean priporocilniBean;
 
 
     @Context
     protected UriInfo uriInfo;
 
-    @Counted(name = "get_all_komentar_count")
-    @Operation(description = "Get all comments.", summary = "Returns all comments present in the database.")
-    @APIResponses({
-            @APIResponse(responseCode = "200",
-                    description = "Array of comments",
-                    content = @Content(schema = @Schema(implementation = Priporocilni.class, type = SchemaType.ARRAY))
-            )})
     @GET
-    public Response getKomentar() {
-        log.info("Get all comments.") ;
-        List<Priporocilni> priporocilni = priporocilniBean.getKomentarFilter(uriInfo);
-
-        return Response.status(Response.Status.OK).entity(priporocilni).build();
-    }
-
-
-    @Operation(description = "Get comment by ID.", summary = "Returns comment with corresponding ID.")
-    @APIResponses({
-            @APIResponse(responseCode = "200",
-                    description = "Successfully returns chosen comment.",
-                    content = @Content(
-                            schema = @Schema(implementation = Priporocilni.class))
-            ),
-            @APIResponse(responseCode = "404",
-                    description = "Comment with given ID doesn't exist.")
-    })
-    @GET
-    @Path("/{priporocilniId}")
-    public Response getKomentar(@Parameter(description = "Metadata ID.", required = true)
-                                     @PathParam("priporocilniId") Integer priporocilniId) {
-
-        log.info("Get comment with id: " + priporocilniId);
-
-        Priporocilni priporocilni = priporocilniBean.getKomentar(priporocilniId);
-
-        if (priporocilni == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-
-        return Response.status(Response.Status.OK).entity(priporocilni).build();
-    }
-
-    @Operation(description = "Get comments by user ID.", summary = "Returns all comments posted by user with coresponding user ID.")
-    @APIResponses({
-            @APIResponse(responseCode = "200",
-                    description = "Successfully returns chosen users comments.",
-                    content = @Content(
-                            schema = @Schema(implementation = Priporocilni.class, type = SchemaType.ARRAY))
-            ),
-            @APIResponse(responseCode = "404",
-                    description = "User with given ID doesn't exist.")
-    })
-    @GET
-    @Path("user/{userId}")
-    public Response getKomentarByUser(@Parameter(description = "User ID.", required = true)
-                                 @PathParam("userId") Integer userId) {
-
-        log.info("Get all comments posted by user with id: " + userId);
-
-        List<Priporocilni> priporocilni = priporocilniBean.getKomentarByUser(userId);
-
-        if (priporocilni == null || priporocilni.isEmpty()) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-
-        return Response.status(Response.Status.OK).entity(priporocilni).build();
-    }
-    @Operation(description = "Get comments by destinacija ID.", summary = "Returns all comments posted under destinacija with coresponding destinacija ID.")
-    @APIResponses({
-            @APIResponse(responseCode = "200",
-                    description = "Successfully returns chosen destinations comments.",
-                    content = @Content(
-                            schema = @Schema(implementation = Priporocilni.class, type = SchemaType.ARRAY))
-            ),
-            @APIResponse(responseCode = "404",
-                    description = "Destinacija with given ID doesn't exist.")
-    })
-    @GET
-    @Path("destinacija/{destinacijaId}")
-    public Response getKomentarByDestinacija(@Parameter(description = "Destinacija ID.", required = true)
-                                 @PathParam("destinacijaId") Integer destinacijaId) {
-
-        log.info("Get all comments posted under destination with id: " + destinacijaId);
-
-        List<Priporocilni> priporocilni = priporocilniBean.getKomentarByDestinacija(destinacijaId);
-
-        if (priporocilni == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-
-        return Response.status(Response.Status.OK).entity(priporocilni).build();
-    }
+    @Path("/{userId}")
+    public Response getPriporocilo(@Parameter(description = "User ID", required = true)
+                                       @PathParam("userId") Integer userId) {
+        log.info("Get priporocilo for user with id: " + userId);
+        okhttp3.OkHttpClient client = new okhttp3.OkHttpClient();
+        Gson gson = new Gson();
+        Uporabnik uporabnik;
+        KatalogDestinacij[] destinacije;
 
 
-    @Operation(description = "Add new comment from given user to a destination.", summary = "Add comment")
-    @APIResponses({
-            @APIResponse(responseCode = "201",
-                    description = "Comment successfully added.",
-                    content = @Content(
-                            schema = @Schema(implementation = Priporocilni.class)
-                    )
-            ),
-            @APIResponse(responseCode = "405",
-                        description = "Either user ID or destinacija ID was not given")
-    })
-    @Counted(name = "num_of_posted_comments")
-    @POST
-    public Response postKomentarByDestinacija(@RequestBody(description = "DTO object with comment metadata and text",
-                                                           required = true,
-                                                           content = @Content(
-                                                                   schema = @Schema(implementation = Priporocilni.class)
-                                                           )) Priporocilni priporocilni) throws IOException {
-
-        log.info("Post new comment.");
-
-        if (priporocilni.getLokacija_id() == null || priporocilni.getUser_id() == null){
-            return Response.status(Response.Status.BAD_REQUEST).build();
-        }
-
-        if(priporocilni.getUstvarjen() == null){
-            priporocilni.setUstvarjen(Instant.now());
-        }
-
-        String text = priporocilni.getKomentar();
-        okhttp3.RequestBody body = okhttp3.RequestBody
-                .create(okhttp3.MediaType.get("application/x-www-form-urlencoded"), text);
-
-        Request request = new Request.Builder()
-                .url("https://api.apilayer.com/bad_words?censor_character=*")
-                .addHeader("apiKey", "VC7y8FdT1gEcdGuoOTZBWSBPN05mq4ds")
-                .post(body)
+        okhttp3.Request request = new okhttp3.Request.Builder()
+                .url("http://localhost:8083/v1/uporabnik/" + userId)
+                .method("GET", null)
                 .build();
+        try{
+            okhttp3.Response response = client.newCall(request).execute();
+            if(response.code() == 200){
+                String responseBody = response.body().string();
+                response.body().close();
+                try{
+                    uporabnik = gson.fromJson(responseBody, Uporabnik.class);
+                }catch (Exception e){
+                    log.info(responseBody);
+                    return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+                }
 
-        OkHttpClient client = new OkHttpClient().newBuilder().build();
-
-        Call call = client.newCall(request);
-        okhttp3.Response response1 = call.execute();
-
-        JSONObject jo = new JSONObject(response1.body().string());
-
-        priporocilni.setKomentar(jo.get("censored_content").toString());
-
-        // kdaj dobim exception Internal Exception: org.postgresql.util.PSQLException: ERROR: prepared statement "S_2" already exists
-        // bi bilo idealno za error prevention.
-        return Response.status(Response.Status.CREATED).entity(priporocilniBean.createKomentar(priporocilni)).build();
-    }
-
-    @Operation(description = "Update comment from user on destinacija.", summary = "Update comment with corresponding komentar ID.")
-    @APIResponses({
-            @APIResponse(
-                    responseCode = "201",
-                    description = "Comment successfully updated.",
-                    content = @Content(
-                            schema = @Schema(implementation = Priporocilni.class)
-                    )
-            ),
-            @APIResponse(
-                    responseCode = "404",
-                    description = "Comment with given komentar ID was not found, hence cannot be updated."
-            )
-            })
-    @PUT
-    @Counted(name = "number_of_updated_comments")
-    @Path("{priporocilniId}")
-    public Response putImageMetadata(@Parameter(description = "Metadata ID.", required = true)
-                                     @PathParam("priporocilniId") Integer priporocilniId,
-                                     @RequestBody(
-                                             description = "DTO object with comment.",
-                                             required = true, content = @Content(
-                                             schema = @Schema(implementation = Priporocilni.class)))
-                                     Priporocilni priporocilni) throws IOException{
-
-        log.info("Update comment.");
-
-        if(priporocilni.getUstvarjen() == null){
-            priporocilni.setUstvarjen(Instant.now());
+            }
+            else{
+                return Response.status(Response.Status.NOT_FOUND).entity("User with id: " + userId + " does not exist.").build();
+            }
+        }catch (IOException e){
+            log.warning(e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
+        log.info("Get priporocilo za uporabnika: " + uporabnik.getUsername());
 
-        priporocilni = priporocilniBean.putKomentar(priporocilniId, priporocilni);
-
-        if (priporocilni == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-
-        String text = priporocilni.getKomentar();
-        okhttp3.RequestBody body = okhttp3.RequestBody
-                .create(okhttp3.MediaType.get("application/x-www-form-urlencoded"), text);
-
-        Request request = new Request.Builder()
-                .url("https://api.apilayer.com/bad_words?censor_character=*")
-                .addHeader("apiKey", "VC7y8FdT1gEcdGuoOTZBWSBPN05mq4ds")
-                .post(body)
+        okhttp3.Request request2 = new okhttp3.Request.Builder()
+                .url("http://localhost:8080/v1/katalogDestinacij/")
                 .build();
+        try{
+            okhttp3.Response response = client.newCall(request2).execute();
+            if(response.code() == 200){
+                String responseBody = response.body().string();
+                response.body().close();
+                try{
+                    destinacije = gson.fromJson(responseBody, KatalogDestinacij[].class);
+                }catch (Exception e){
+                    log.warning("could not parse json from kataogDestinacij[]. String: " + responseBody);
+                    return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+                }
 
-        OkHttpClient client = new OkHttpClient().newBuilder().build();
-
-        Call call = client.newCall(request);
-        okhttp3.Response response1 = call.execute();
-
-        JSONObject jo = new JSONObject(response1.body().string());
-
-        priporocilni.setKomentar(jo.get("censored_content").toString());
-
-        return Response.status(Response.Status.CREATED).build();
-
-    }
-
-    @Operation(description = "Delete comment with given id.", summary = "Delete comment with corresponding komentar ID.")
-    @APIResponses({
-            @APIResponse(
-                    responseCode = "204",
-                    description = "Comment successfully deleted."
-            ),
-            @APIResponse(
-                    responseCode = "404",
-                    description = "Comment with given comment ID was not found."
-            )
-    })
-    @DELETE
-    @Counted(name = "number_of_deleted_comments")
-    @Path("{priporocilniId}")
-    public Response deleteKomentar(@Parameter(description = "Comment ID.", required = true)
-                                        @PathParam("priporocilniId") Integer priporocilniId){
-
-        log.info("Delete comment with id: " + priporocilniId);
-
-        boolean deleted = priporocilniBean.deleteKomentar(priporocilniId);
-
-        if (deleted) {
-            return Response.status(Response.Status.NO_CONTENT).build();
+            }
+            else{
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
+        } catch (IOException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
-        else {
-            return Response.status(Response.Status.NOT_FOUND).build();
+
+        List<KatalogDestinacij> neobiskaneDestinacije = new ArrayList<KatalogDestinacij>();
+        int[] obiskaneDestinacije = uporabnik.getVisitedLocations();
+
+        for(int i = 0; i < destinacije.length; i++){
+            boolean found = false;
+            for(int j = 0; j < obiskaneDestinacije.length; j++){
+                if(destinacije[i].getId() == obiskaneDestinacije[j]){
+                    found = true;
+                    break;
+                }
+            }
+            if(!found){
+                neobiskaneDestinacije.add(destinacije[i]);
+            }
         }
+
+        double[] ocene = new double[neobiskaneDestinacije.size()];
+        gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+        for(int i = 0; i < neobiskaneDestinacije.size(); i++){
+            int neobiskanaId = neobiskaneDestinacije.get(i).getId();
+            double ocena = 0;
+            Komentar[] komentarji = {};
+            okhttp3.Request request3 = new okhttp3.Request.Builder()
+                    .url("http://localhost:8081/v1/komentar/destinacija/" + neobiskanaId)
+                    .build();
+            try{
+                okhttp3.Response response = client.newCall(request3).execute();
+                if(response.code() == 200){
+                    String responseBody = response.body().string();
+                    try{
+                        komentarji = gson.fromJson(responseBody, Komentar[].class);
+                    }catch (Exception e){
+                        log.warning("could not parse json from komentar[]." + e.getMessage());
+                        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+                    }
+                    response.body().close();
+
+                }
+                else{
+                    log.warning("Response code: " + response.code());
+                    //return Response.status(Response.Status.NOT_FOUND).build();
+                }
+
+            } catch (IOException e) {
+                log.warning("Destinacija " + neobiskaneDestinacije.get(i).getTitle() + " has no comments.");
+            }
+            for (int j = 0; j < komentarji.length; j++){
+                ocena += komentarji[j].getOcena();
+            }
+            if(komentarji.length != 0){
+                ocena = ocena / komentarji.length;
+            }
+            ocene[i] = ocena;
+        }
+        String ocene_string = "";
+        for(int i = 0; i < ocene.length; i++){
+            ocene_string += ocene[i] + " ";
+        }
+        // find the 10 highest values in ocena and return the corresponding destinacije
+        int stDestinacij = (int)Math.min(neobiskaneDestinacije.size(), 10);
+        double[] najboljseOcene = new double[stDestinacij];
+        int[] najboljseDestinacije = new int[stDestinacij];
+        for(int i = 0; i < stDestinacij; i++){
+            najboljseOcene[i] = 0;
+            najboljseDestinacije[i] = 0;
+        }
+        for(int i = 0; i < ocene.length; i++){
+            for(int j = 0; j < stDestinacij; j++){
+                if(ocene[i] > najboljseOcene[j]){
+                    for(int k = stDestinacij-1; k > j; k--){
+                        najboljseOcene[k] = najboljseOcene[k-1];
+                        najboljseDestinacije[k] = najboljseDestinacije[k-1];
+                    }
+                    najboljseOcene[j] = ocene[i];
+                    najboljseDestinacije[j] = neobiskaneDestinacije.get(i).getId();
+                    break;
+                }
+            }
+        }
+        String najocene_string = "";
+        for(int i = 0; i < najboljseOcene.length; i++){
+            najocene_string += najboljseOcene[i] + " ";
+        }
+        log.info("Najboljse ocene: " + najocene_string);
+
+        List<KatalogDestinacij> priporoceneDestinacije = new ArrayList<KatalogDestinacij>();
+        for (int i = 0; i < stDestinacij; i++){
+            if (najboljseOcene[i] == 0){
+                break;
+            }
+            int najDest = najboljseDestinacije[i];
+            priporoceneDestinacije.add(neobiskaneDestinacije.get(najDest));
+        }
+
+
+        return Response.status(Response.Status.OK).entity(priporoceneDestinacije).build();
     }
 
 
