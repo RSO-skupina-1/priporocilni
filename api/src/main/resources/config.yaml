@@ -13,10 +13,14 @@ kumuluzee:
       username: grzin
       password: ep2sMLqtu3rk
   health:
+    servlet:
+      mapping: v1/priporocilni/health
+      enabled: true
     checks:
-      data-source-health-check:
-        type: liveness
-        jndi-name: jdbc/KomentarDS
+      http-health-check:
+        - connection-url: http://katalog-destinacij.426c0549c45c4600b961.switzerlandnorth.aksapp.io/v1/katalogDestinacij
+        - connection-url: http://katalog-destinacij.426c0549c45c4600b961.switzerlandnorth.aksapp.io/v1/komentar
+        - connection-url: http://katalog-destinacij.426c0549c45c4600b961.switzerlandnorth.aksapp.io/v1/uporabnik
   openapi-mp:
     enabled: true
     ui:
