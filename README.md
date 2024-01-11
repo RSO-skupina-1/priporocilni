@@ -1,4 +1,4 @@
-# RSO: komentar destinacij microservice
+# RSO: Priporocila destinacij microservice
 
 ## Prerequisites
 
@@ -10,17 +10,17 @@ docker run -d --name pg-komentar -e POSTGRES_USER=dbuser -e POSTGRES_PASSWORD=po
 ```bash
 mvn clean package
 cd api/target
-java -jar komentar-api-1.0.0-SNAPSHOT.jar
+java -jar priporocilni-api-1.0.0-SNAPSHOT.jar
 ```
 Available at: localhost:8081/v1/images
 
 ## Docker commands
 ```bash
-docker build -t komentar .   
+docker build -t proporocilni .   
 docker images
-docker run -p 8081:8081 komentar    
-docker tag komentar rso/komentar   
-docker push rso/komentar  
+docker run -p 8081:8081 priporocilni    
+docker tag komentar rso/priporocilni   
+docker push rso/priporocilni  
 ```
 ```bash
 docker network ls  

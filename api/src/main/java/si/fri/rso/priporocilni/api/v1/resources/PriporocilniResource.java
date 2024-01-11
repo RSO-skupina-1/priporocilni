@@ -187,13 +187,14 @@ public class PriporocilniResource {
                 okhttp3.Response response = client.newCall(request3).execute();
                 if(response.code() == 200){
                     String responseBody = response.body().string();
+                    response.body().close();
                     try{
                         komentarji = gson.fromJson(responseBody, Komentar[].class);
                     }catch (Exception e){
                         log.warning("could not parse json from komentar[]." + e.getMessage());
                         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
                     }
-                    response.body().close();
+
 
                 }
                 else{
