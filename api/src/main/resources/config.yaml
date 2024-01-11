@@ -12,6 +12,11 @@ kumuluzee:
       connection-url: jdbc:postgresql://ep-ancient-fog-19741782-pooler.eu-central-1.aws.neon.tech/izletnik
       username: grzin
       password: ep2sMLqtu3rk
+  health:
+    checks:
+      data-source-health-check:
+        type: liveness
+        jndi-name: jdbc/KomentarDS
   openapi-mp:
     enabled: true
     ui:

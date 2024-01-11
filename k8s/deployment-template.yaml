@@ -13,7 +13,7 @@ spec:
         app: priporocilni
     spec:
       containers:
-        - image: corurban/priporocilni:2024-01-11-11-27-19
+        - image: corurban/priporocilni:2024-01-11-11-39-44
           name: priporocilni
           env:
             - name: KUMULUZEE_DATASOURCES0_CONNECTIONURL
