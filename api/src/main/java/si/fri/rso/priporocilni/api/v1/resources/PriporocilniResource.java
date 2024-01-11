@@ -136,7 +136,7 @@ public class PriporocilniResource {
         log.info("Get priporocilo za uporabnika: " + uporabnik.getUsername());
 
         okhttp3.Request request2 = new okhttp3.Request.Builder()
-                .url("http://localhost:8080/v1/katalogDestinacij/")
+                .url("http://katalog-destinacij.426c0549c45c4600b961.switzerlandnorth.aksapp.io/v1/katalogDestinacij/")
                 .build();
         try{
             okhttp3.Response response = client.newCall(request2).execute();
@@ -181,7 +181,7 @@ public class PriporocilniResource {
             double ocena = 0;
             Komentar[] komentarji = {};
             okhttp3.Request request3 = new okhttp3.Request.Builder()
-                    .url("http://localhost:8081/v1/komentar/destinacija/" + neobiskanaId)
+                    .url("http://katalog-destinacij.426c0549c45c4600b961.switzerlandnorth.aksapp.io/v1/komentar/destinacija/" + neobiskanaId)
                     .build();
             try{
                 okhttp3.Response response = client.newCall(request3).execute();
