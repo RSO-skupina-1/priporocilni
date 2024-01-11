@@ -13,7 +13,7 @@ spec:
         app: priporocilni
     spec:
       containers:
-        - image: corurban/priporocilni:2024-01-11-11-39-44
+        - image: corurban/priporocilni:2024-01-11-11-58-02
           name: priporocilni
           env:
             - name: KUMULUZEE_DATASOURCES0_CONNECTIONURL
@@ -27,7 +27,7 @@ spec:
                   #name: #to be added
                   #key: #to be added
           ports:
-            - containerPort: 8081
+            - containerPort: 8082
               name: server
           livenessProbe:
             httpGet:

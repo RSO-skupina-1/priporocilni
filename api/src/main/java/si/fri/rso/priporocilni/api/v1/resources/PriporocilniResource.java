@@ -110,7 +110,7 @@ public class PriporocilniResource {
 
 
         okhttp3.Request request = new okhttp3.Request.Builder()
-                .url("http://localhost:8083/v1/uporabnik/" + userId)
+                .url("http://katalog-destinacij.426c0549c45c4600b961.switzerlandnorth.aksapp.io/v1/uporabnik/" + userId)
                 .method("GET", null)
                 .build();
         try{
