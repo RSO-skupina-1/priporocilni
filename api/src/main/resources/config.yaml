@@ -7,6 +7,11 @@ kumuluzee:
     base-url: http://localhost:8082
     http:
       port: 8082
+  datasources:
+    - jndi-name: jdbc/KomentarDS
+      connection-url: jdbc:postgresql://ep-ancient-fog-19741782-pooler.eu-central-1.aws.neon.tech/izletnik
+      username: grzin
+      password: ep2sMLqtu3rk
   openapi-mp:
     enabled: true
     ui:

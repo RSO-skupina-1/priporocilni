@@ -13,7 +13,7 @@ spec:
         app: priporocilni
     spec:
       containers:
-        - image: prelog/rso_priporocilni:2023-12-05-05-57-49
+        - image: corurban/priporocilni:2024-01-11-11-27-19
           name: priporocilni
           env:
             - name: KUMULUZEE_DATASOURCES0_CONNECTIONURL
@@ -49,10 +49,9 @@ kind: Service
 metadata:
   name: priporocilni-service
 spec:
-  type: LoadBalancer
   ports:
-    - port: 8082
+    - port: 80
       protocol: TCP
-      targetPort: server
+      targetPort: 8082
   selector:
     app: priporocilni
