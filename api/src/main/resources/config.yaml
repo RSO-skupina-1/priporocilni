@@ -14,7 +14,7 @@ kumuluzee:
       password: ep2sMLqtu3rk
   health:
     servlet:
-      mapping: v1/priporocilni/health
+      mapping: /v1/priporocilni/health
       enabled: true
     checks:
       http-health-check:
